@@ -1,0 +1,308 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_C 10
+
+// Structure of candidate
+typedef struct Candidate
+{
+    char name[50];
+    int votes;
+    char symbol;
+} Candidate;
+
+// Global array of candidates
+Candidate allCandidates[MAX_C];
+
+// Number of candidates
+int candidateCount = 0;
+
+// Available symbols
+char symbols[10] =
+{
+    '!', '@', '#', '$', '%',
+    '^', '&', '*', '~', '+'
+};
+
+// Keeps track of used symbols
+int symbolTaken[10] = {0};
+
+// Function declarations
+void fillCandidate(int);
+void displayAllCandidates(void);
+void getVotes(int);
+void getResults(void);
+
+
+// Main function
+int main(void)
+{
+    int numVoters;
+
+    printf("====================================\n");
+    printf("       VOTING SYSTEM IN C\n");
+    printf("====================================\n\n");
+
+    // Get number of candidates
+    while (1)
+    {
+        printf("Enter the number of candidates (1-10): ");
+
+        if (scanf("%d", &candidateCount) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
+
+            while (getchar() != '\n')
+                ;
+
+            continue;
+        }
+
+        if (candidateCount >= 1 && candidateCount <= MAX_C)
+        {
+            break;
+        }
+
+        printf("Number of candidates must be between 1 and 10.\n");
+    }
+
+
+    // Get candidate details
+    for (int i = 0; i < candidateCount; i++)
+    {
+        fillCandidate(i);
+    }
+
+
+    // Get number of voters
+    while (1)
+    {
+        printf("\nEnter the number of voters: ");
+
+        if (scanf("%d", &numVoters) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
+
+            while (getchar() != '\n')
+                ;
+
+            continue;
+        }
+
+        if (numVoters > 0)
+        {
+            break;
+        }
+
+        printf("Number of voters must be greater than 0.\n");
+    }
+
+
+    // Collect votes
+    for (int i = 0; i < numVoters; i++)
+    {
+        getVotes(i);
+    }
+
+
+    // Display results
+    getResults();
+
+    return 0;
+}
+
+
+// Function to enter candidate details
+void fillCandidate(int cNum)
+{
+    int num;
+
+    while (1)
+    {
+        printf("\n------------------------------------\n");
+        printf("Available Symbols:\n");
+        printf("------------------------------------\n");
+
+        for (int j = 0; j < 10; j++)
+        {
+            if (symbolTaken[j] == 0)
+            {
+                printf("%d  %c\n", j + 1, symbols[j]);
+            }
+        }
+
+        printf("\nEnter the symbol number of candidate %d: ",
+               cNum + 1);
+
+        if (scanf("%d", &num) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
+
+            while (getchar() != '\n')
+                ;
+
+            continue;
+        }
+
+        // Check whether symbol is valid and unused
+        if (num >= 1 &&
+            num <= 10 &&
+            symbolTaken[num - 1] == 0)
+        {
+            break;
+        }
+
+        printf("This symbol is not available.\n");
+        printf("Please choose an available symbol.\n");
+    }
+
+
+    // Mark symbol as taken
+    symbolTaken[num - 1] = 1;
+
+    // Store symbol
+    allCandidates[cNum].symbol = symbols[num - 1];
+
+
+    // Get candidate name
+    printf("Enter the name of candidate %d: ", cNum + 1);
+
+    scanf("%49s", allCandidates[cNum].name);
+
+    // Initialize vote count
+    allCandidates[cNum].votes = 0;
+}
+
+
+// Function to display all candidates
+void displayAllCandidates(void)
+{
+    printf("\n====================================\n");
+    printf("           CANDIDATES\n");
+    printf("====================================\n");
+
+    for (int j = 0; j < candidateCount; j++)
+    {
+        printf("%d. %s\tSymbol: %c\n",
+               j + 1,
+               allCandidates[j].name,
+               allCandidates[j].symbol);
+    }
+
+    printf("====================================\n");
+}
+
+
+// Function to collect votes
+void getVotes(int voterCount)
+{
+    int choice;
+
+    while (1)
+    {
+        displayAllCandidates();
+
+        printf("Voter %d, please enter your choice (1-%d): ",
+               voterCount + 1,
+               candidateCount);
+
+        if (scanf("%d", &choice) != 1)
+        {
+            printf("Invalid input! Please enter a number.\n");
+
+            while (getchar() != '\n')
+                ;
+
+            continue;
+        }
+
+
+        // Check whether vote is valid
+        if (choice >= 1 && choice <= candidateCount)
+        {
+            allCandidates[choice - 1].votes++;
+
+            printf("Vote recorded successfully!\n\n");
+
+            break;
+        }
+
+        printf("Invalid choice! Please vote again.\n");
+    }
+}
+
+
+// Function to calculate and display results
+void getResults(void)
+{
+    int maxVotes = -1;
+    int winnerIndex = -1;
+    int winnerFrequency = 0;
+
+
+    // Find maximum votes
+    for (int i = 0; i < candidateCount; i++)
+    {
+        if (allCandidates[i].votes > maxVotes)
+        {
+            maxVotes = allCandidates[i].votes;
+            winnerIndex = i;
+        }
+    }
+
+
+    // Check how many candidates have maximum votes
+    for (int i = 0; i < candidateCount; i++)
+    {
+        if (allCandidates[i].votes == maxVotes)
+        {
+            winnerFrequency++;
+        }
+    }
+
+
+    printf("\n\n====================================\n");
+    printf("              RESULTS\n");
+    printf("====================================\n");
+
+
+    // Display votes of all candidates
+    for (int i = 0; i < candidateCount; i++)
+    {
+        printf("%s (%c) : %d votes\n",
+               allCandidates[i].name,
+               allCandidates[i].symbol,
+               allCandidates[i].votes);
+    }
+
+
+    printf("------------------------------------\n");
+
+
+    // Check result
+    if (winnerFrequency > 1)
+    {
+        printf("Result: IT IS A TIE\n");
+        printf("Multiple candidates received %d votes.\n",
+               maxVotes);
+    }
+    else if (winnerIndex != -1)
+    {
+        printf("Winner       : %s\n",
+               allCandidates[winnerIndex].name);
+
+        printf("Symbol       : %c\n",
+               allCandidates[winnerIndex].symbol);
+
+        printf("Total Votes  : %d\n",
+               allCandidates[winnerIndex].votes);
+    }
+    else
+    {
+        printf("No winner.\n");
+    }
+
+
+    printf("====================================\n");
+}
+
