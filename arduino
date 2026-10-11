@@ -1,0 +1,70 @@
+
+#include <Stepper.h>
+
+// Stepper motor settings
+const int STEPS_PER_REVOLUTION = 2048;
+
+// Driver pins: IN1, IN3, IN2, IN4
+Stepper blindMotor(
+  STEPS_PER_REVOLUTION,
+  8, 10, 9, 11
+);
+
+// LDR sensor pin
+const int LDR_PIN = A0;
+
+// Light thresholds
+const int BRIGHT_THRESHOLD = 700;
+const int DARK_THRESHOLD = 500;
+
+// Adjust according to your blind mechanism
+const int BLIND_STEPS = 2048;
+
+// Motor speed in RPM
+const int MOTOR_SPEED = 10;
+
+// Blind state
+bool blindsOpen = false;
+
+void setup() {
+  Serial.begin(9600);
+
+  blindMotor.setSpeed(MOTOR_SPEED);
+
+  Serial.println("Automated Window Blinds");
+  Serial.println("System Started");
+}
+
+void loop() {
+  // Read light intensity
+  int lightValue = analogRead(LDR_PIN);
+
+  Serial.print("Light Level: ");
+  Serial.println(lightValue);
+
+  // Open blinds when light is bright
+  if (lightValue >= BRIGHT_THRESHOLD && !blindsOpen) {
+    Serial.println("Bright light detected");
+    Serial.println("Opening blinds...");
+
+    blindMotor.step(BLIND_STEPS);
+
+    blindsOpen = true;
+
+    Serial.println("Blinds opened");
+  }
+
+  // Close blinds when light becomes low
+  else if (lightValue <= DARK_THRESHOLD && blindsOpen) {
+    Serial.println("Low light detected");
+    Serial.println("Closing blinds...");
+
+    blindMotor.step(-BLIND_STEPS);
+
+    blindsOpen = false;
+
+    Serial.println("Blinds closed");
+  }
+
+  delay(200);
+}
